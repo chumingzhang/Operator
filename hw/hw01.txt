@@ -1,0 +1,43 @@
+.section .data
+    count:
+        .int 10
+    nums:
+        .int 12, 4, 6, 7, 80, 34, 54, 46, 3, 23
+    output:
+        .ascii "The smallest one is %d, the average is %d \n"
+
+.section .text
+.globl _start
+_start:
+    movl $0, %edi
+    movl nums(, %edi, 4), %eax
+    # ebx存放最小值，ecx存放总和
+    movl %eax, %ebx
+    movl $0, %ecx
+    addl %eax, %ecx
+
+Loop:
+    cmpl $9, %edi
+    je Exit
+    addl $1, %edi
+    movl nums(, %edi, 4), %eax
+    addl %eax, %ecx
+    cmpl %eax, %ebx
+    jle Loop
+    movl %eax, %ebx
+    jmp Loop
+
+Exit:
+    #规定被除数为eax，除数为count, 商放在eax, 余数放在edx
+    movl %ecx, %eax   
+    # edx不置零的话会有float exception
+    movl $0, %edx
+    divl count
+    # 注意参数顺序，先放最小值，再放均值（编程时逆序）
+    pushl %eax
+    pushl %ebx
+    pushl $output
+    call printf
+    # 退出码
+    pushl $0
+    call exit

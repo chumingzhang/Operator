@@ -1,0 +1,73 @@
+.section .data
+values:
+ .int 20, 22, 14, 15, 17, 10
+length:
+ .int 6
+outputraw:
+ .asciz "The raw values are: "
+output:
+ .asciz "The sorted values are: "
+outputvalues:
+ .asciz "%d %d %d %d %d %d\n"
+
+.section .text
+.globl _start
+_start:
+ movl length, %ecx #inside
+ movl length, %edx #outside
+ subl $1, %ecx
+ subl $1, %edx
+ movl $values, %esi
+ 
+print_values1:
+ pushl $outputraw
+ call printf
+ movl length, %ecx
+ subl $1, %ecx
+ 
+loop_values1:
+ pushl values(, %ecx, 4)
+ loop loop_values1
+ pushl values
+ pushl $outputvalues
+ call printf
+ addl $28, %esp
+ movl length, %ecx
+ movl length, %edx
+ subl $1, %ecx
+ subl $1, %edx
+ movl $values, %esi
+
+loop:
+ movl (%esi), %eax
+ cmpl %eax, 4(%esi)
+ jge skip
+ xchg %eax, 4(%esi)
+ movl %eax, (%esi)
+
+skip:
+ add $4, %esi
+ dec %ecx
+ jnz loop
+ dec %edx
+ jz print_values2
+ movl $values, %esi
+ movl %edx, %ecx
+ jmp loop
+
+print_values2:
+ pushl $output
+ call printf
+ movl length, %ecx
+ subl $1, %ecx
+
+loop_values2:
+ pushl values(, %ecx, 4)
+ loop loop_values2
+ pushl values
+ pushl $outputvalues
+ call printf
+ addl $28, %esp
+ movl $1, %eax
+ movl $0, %ebx
+ int $0x80
